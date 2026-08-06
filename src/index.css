@@ -1,6 +1,14 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 body {
   font-family: "Plus Jakarta Sans", sans-serif;
 }
 
+@theme {
+  --font-manrope: "Manrope", sans-serif;
+}
+
+@theme {
+  --font-hanken: "Hanken Grotesk", sans-serif;
+}
