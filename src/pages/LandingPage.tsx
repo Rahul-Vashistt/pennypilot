@@ -1,6 +1,10 @@
+import CTA from "../features/landing/CTA";
+import FeatureGrid from "../features/landing/features/FeatureGrid";
+import Footer from "../components/Footer";
 import Header from "../components/Header";
-import HeroSection from "../components/HeroSection";
-import ProductShowcase from "../components/ProductShowcase";
+import HeroSection from "../features/landing/HeroSection";
+import HowItWorks from "../features/landing/HowItWorks";
+import ProductShowcase from "../features/landing/ProductShowcase";
 
 export default function LandingPage() {
     return (
@@ -28,6 +32,10 @@ export default function LandingPage() {
                 <Header />
                 <HeroSection />
                 <ProductShowcase />
+                <FeatureGrid />
+                <HowItWorks />
+                <CTA />
+                <Footer />
             </main>
         </>
     )

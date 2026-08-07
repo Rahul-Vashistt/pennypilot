@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 
 export default function HeroSection() {
   return (
-    <section className="min-h-screen overflow-hidden">
+    <section className="min-h-screen overflow-hidden sm:translate-y-0 -translate-y-10">
       {/* Hero content */}
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-24">
         <div className="mt-35 flex flex-col items-center justify-center gap-12">
           {/* Headline */}
-          <div className="flex flex-col items-center gap-4 text-6xl font-bold dark:text-white">
+          <div className="flex flex-col items-center md:gap-4 gap-2 font-bold dark:text-white lg:text-6xl md:text-5xl text-4xl">
             <h1>Your Money.</h1>
             <h1 className="bg-linear-to-r from-emerald-700 to-blue-700 bg-clip-text text-transparent dark:from-emerald-500 dark:to-blue-500">
               Under Control.
@@ -16,17 +16,17 @@ export default function HeroSection() {
           </div>
 
           {/* Hero description */}
-          <p className="max-w-[72%] text-center font-sans text-2xl leading-normal text-black/70 dark:text-white/70">
+          <p className="max-w-[95%] md:max-w-[72%] text-center font-sans text-lg md:text-2xl leading-normal text-black/70 dark:text-white/70">
             Experience precise clarity for your personal finances. PennyPilot
             is the modern, transparent, and effortlessly simple way to track
             spending and build wealth.
           </p>
 
           {/* Primary actions */}
-          <div className="flex gap-5">
+          <div className="flex flex-col gap-4 md:flex-row md:gap-5 ">
             <Link
               to="/"
-              className="group flex cursor-pointer items-center gap-2 rounded-full bg-emerald-700 px-8 py-5 text-white shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-emerald-700/40 active:scale-96 dark:hover:shadow-emerald-700/40"
+              className="group flex justify-center cursor-pointer items-center gap-2 rounded-full bg-emerald-700 px-8 py-5 text-white shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-emerald-700/40 active:scale-96 dark:hover:shadow-emerald-700/40"
             >
               <span className="text-lg font-semibold">Get Started</span>
               <span className="material-symbols-rounded transition-transform duration-200 group-hover:translate-x-2">
