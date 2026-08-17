@@ -25,7 +25,7 @@ export default function HowItWorks() {
 
           <div className="flex flex-col gap-14 md:flex-row md:justify-between md:gap-10">
             {/* Step 1 */}
-            <div className="relative z-10 flex items-start gap-5 md:w-1/3 md:flex-col md:items-center md:text-center">
+            <div className="group relative z-10 flex items-start gap-5 md:w-1/3 md:flex-col md:items-center md:text-center">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white text-xl font-bold text-emerald-700 shadow-md transition-all duration-300 group-hover:border-emerald-500 dark:border-black dark:bg-black dark:text-emerald-500">
                 1
               </div>
@@ -42,7 +42,7 @@ export default function HowItWorks() {
             </div>
 
             {/* Step 2 */}
-            <div className="relative z-10 flex items-start gap-5 md:w-1/3 md:flex-col md:items-center md:text-center">
+            <div className="group relative z-10 flex items-start gap-5 md:w-1/3 md:flex-col md:items-center md:text-center">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white text-xl font-bold text-emerald-700 shadow-md transition-all duration-300 group-hover:border-emerald-500 dark:border-black dark:bg-black dark:text-emerald-500">
                 2
               </div>
@@ -59,7 +59,7 @@ export default function HowItWorks() {
             </div>
 
             {/* Step 3 */}
-            <div className="relative z-10 flex items-start gap-5 md:w-1/3 md:flex-col md:items-center md:text-center">
+            <div className="group relative z-10 flex items-start gap-5 md:w-1/3 md:flex-col md:items-center md:text-center">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-white bg-white text-xl font-bold text-emerald-700 shadow-md transition-all duration-300 group-hover:border-emerald-500 dark:border-black dark:bg-black dark:text-emerald-500">
                 3
               </div>
