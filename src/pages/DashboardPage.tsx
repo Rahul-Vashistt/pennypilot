@@ -1,4 +1,4 @@
-// import Header from "../components/Header";
+import Header from "../components/Header";
 import DashboardHeader from "../features/dashboard/DashboardHeader";
 import Sidebar from "../features/dashboard/Sidebar";
 
@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { SpendingOverview } from "../features/dashboard/SpendingOverview";
 import RecentTransactions from "../features/dashboard/RecentTransactions";
 import { Stats } from "../features/dashboard/Stats";
+import WhereYourMoneyGoes from "../features/dashboard/WhereMoneyGoes";
 
 export default function DashboardPage() {
   return (
@@ -54,13 +55,22 @@ export default function DashboardPage() {
       </button>
       
       <Sidebar />
-      {/* <Header /> */}
-      <section className="lg:pl-82 pl-10 pr-10 pt-10 h-full w-full flex flex-col gap-4">
-        <DashboardHeader />
-        <Stats />
-        <SpendingOverview />
-        <RecentTransactions/>
-      </section>
+      <Header />
+
+      <div className="lg:pl-82 px-5 lg:px-0 pt-30 h-full w-full">
+          <DashboardHeader />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12">
+        <section className="lg:pl-82 px-5 lg:px-10 pt-10 h-full w-full flex flex-col gap-4 lg:col-span-9">
+          <Stats />
+          <SpendingOverview />
+          <RecentTransactions/>
+        </section>
+        <section className="lg:col-span-3 px-5 lg:pr-5 lg:px-0 lg:pt-10">
+          <WhereYourMoneyGoes />
+        </section>
+      </div>
     </main>
   );
 }

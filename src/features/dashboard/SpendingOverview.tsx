@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { formatCurrency } from "../../utils/formatText";
 
 type Period = "Week" | "Month" | "Year";
 
@@ -49,14 +50,6 @@ const chartData: Record<Period, ChartData[]> = {
     { label: "Nov", income: 141000, expenses: 63000 },
     { label: "Dec", income: 154000, expenses: 68000 },
   ],
-};
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(value);
 };
 
 interface CustomTooltipProps {
