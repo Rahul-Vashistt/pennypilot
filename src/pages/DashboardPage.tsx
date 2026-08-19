@@ -6,7 +6,8 @@ import { Plus } from "lucide-react";
 import { SpendingOverview } from "../features/dashboard/SpendingOverview";
 import RecentTransactions from "../features/dashboard/RecentTransactions";
 import { Stats } from "../features/dashboard/Stats";
-import WhereYourMoneyGoes from "../features/dashboard/WhereMoneyGoes";
+import BudgetOverview from "../features/dashboard/BudgetOverview";
+import SpendingBreakdown from "../features/dashboard/SpendingBreakdown";
 
 export default function DashboardPage() {
   return (
@@ -68,7 +69,8 @@ export default function DashboardPage() {
           <RecentTransactions/>
         </section>
         <section className="lg:col-span-3 px-5 lg:pr-5 lg:px-0 lg:pt-10">
-          <WhereYourMoneyGoes />
+          <SpendingBreakdown />
+          <BudgetOverview />
         </section>
       </div>
     </main>

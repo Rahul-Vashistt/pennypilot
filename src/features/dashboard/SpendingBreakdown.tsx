@@ -7,6 +7,7 @@ interface SpendingCategory {
   color: string;
 }
 
+// Dummy data.
 const spendingCategories: SpendingCategory[] = [
   {
     category: "Food & Dining",
@@ -85,7 +86,7 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
   );
 }
 
-export default function WhereYourMoneyGoes() {
+export default function SpendingBreakdown() {
   const totalSpent = spendingCategories.reduce(
     (total, item) => total + item.amount,
     0,
@@ -102,6 +103,7 @@ export default function WhereYourMoneyGoes() {
         Where Your Money Goes
       </h2>
 
+      {/* Pie chart container. */}
       <div className="relative z-10 w-full h-80">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -116,16 +118,17 @@ export default function WhereYourMoneyGoes() {
               dataKey="amount"
               nameKey="category"
               shape={(props) => (
-                <Sector 
-                    {...props} 
-                    fill={props.payload.color}
-                    fillOpacity={props.isActive ? 0 : 1}
-                    stroke={props.isActive ? props.payload.color : "none"}
-                    strokeWidth={props.isActive ? 2 : 0} 
+                <Sector
+                  {...props}
+                  fill={props.payload.color}
+                  fillOpacity={props.isActive ? 0 : 1}
+                  stroke={props.isActive ? props.payload.color : "none"}
+                  strokeWidth={props.isActive ? 2 : 0}
                 />
               )}
             />
 
+            {/* Center of the donut displaying the total spending amount. */}
             <text
               x="50%"
               y="47%"
@@ -146,11 +149,13 @@ export default function WhereYourMoneyGoes() {
               Total Spent
             </text>
 
+            {/* Custom tooltip shown when hovering over a sector. */}
             <Tooltip content={<CustomTooltip />} />
           </PieChart>
         </ResponsiveContainer>
       </div>
 
+      {/* Category breakdown displayed below the chart. */}
       <div className="mt-4 space-y-3">
         {data.map((item) => (
           <div className="flex items-center justify-between">
