@@ -11,14 +11,14 @@ export default function DashboardHeader() {
         <header className="flex flex-col gap-6 rounded-2xl border border-zinc-200/60 bg-green-50/10 px-6 py-5 shadow-sm backdrop-blur-sm dark:border-slate-800/70 dark:bg-green-950/10 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
             {/* Greeting */}
             <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-semibold tracking-tight text-green-950 dark:text-green-50 sm:text-4xl lg:text-5xl">
+                <h1 className="font-semibold tracking-tight text-green-950 dark:text-green-50 text-2xl sm:text-4xl lg:text-5xl">
                     Good morning,
                     <span className="ml-2 font-bold text-emerald-700 dark:text-emerald-500">
                         Rahul.
                     </span>
                 </h1>
 
-                <p className="max-w-xl text-base font-medium text-green-950/70 dark:text-green-50/70 sm:text-lg">
+                <p className="max-w-xl text-sm font-medium text-green-950/70 dark:text-green-50/70 sm:text-lg">
                     Here's what's happening with your money today.
                 </p>
             </div>

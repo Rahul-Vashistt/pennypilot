@@ -65,7 +65,7 @@ const stats: Stat[] = [
 
 export function Stats() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {stats.map((stat) => {
         const Icon = stat.icon;
         const TrendIcon = stat.trendIcon;

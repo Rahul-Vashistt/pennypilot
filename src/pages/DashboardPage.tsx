@@ -8,6 +8,7 @@ import RecentTransactions from "../features/dashboard/RecentTransactions";
 import { Stats } from "../features/dashboard/Stats";
 import BudgetOverview from "../features/dashboard/BudgetOverview";
 import SpendingBreakdown from "../features/dashboard/SpendingBreakdown";
+import SmartInsight from "../features/dashboard/SmartInsight";
 
 export default function DashboardPage() {
   return (
@@ -56,19 +57,20 @@ export default function DashboardPage() {
       </button>
       
       <Sidebar />
-      <Header />
+      
 
-      <div className="lg:pl-82 px-5 lg:px-0 pt-30 h-full w-full">
+      <div className="flex flex-col gap-5 xl:pl-82 px-5 pt-10 h-full w-full">
           <DashboardHeader />
+          <Stats />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12">
-        <section className="lg:pl-82 px-5 lg:px-10 pt-10 h-full w-full flex flex-col gap-4 lg:col-span-9">
-          <Stats />
+      <div className="grid grid-cols-1 2xl:grid-cols-12 py-10 xl:pl-72">
+        <section className="px-5 h-full w-full flex flex-col gap-4 2xl:col-span-9">
           <SpendingOverview />
           <RecentTransactions/>
         </section>
-        <section className="lg:col-span-3 px-5 lg:pr-5 lg:px-0 lg:pt-10">
+        <section className="2xl:col-span-3 px-5">
+          <SmartInsight />
           <SpendingBreakdown />
           <BudgetOverview />
         </section>

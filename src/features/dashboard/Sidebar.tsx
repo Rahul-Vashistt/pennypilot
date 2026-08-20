@@ -12,7 +12,7 @@ import {
 export default function Sidebar() {
   return (
     <>
-      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-72 bg-green-50 dark:bg-slate-900 border-r border-zinc-200 dark:border-slate-700 flex-col py-8 z-50">
+      <aside className="hidden xl:flex fixed left-0 top-0 h-full w-72 bg-green-50 dark:bg-slate-900 border-r border-zinc-200 dark:border-slate-700 flex-col py-8 z-50">
         {/* Logo */}
         <div className="px-8 mb-10 flex items-center gap-3">
           <PlaneTakeoff className="text-emerald-500" size={32} />
