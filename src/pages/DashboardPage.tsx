@@ -1,4 +1,4 @@
-import Header from "../components/Header";
+import Header from "../features/landing/Header";
 import DashboardHeader from "../features/dashboard/DashboardHeader";
 import Sidebar from "../features/dashboard/Sidebar";
 

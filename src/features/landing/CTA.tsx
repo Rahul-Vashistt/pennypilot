@@ -19,14 +19,14 @@ export default function CTA() {
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <Link
-                to="/signup"
+                to="/sign-up"
                 className="flex w-full items-center justify-center rounded-full bg-white px-8 py-4 font-manrope text-base font-semibold text-emerald-700 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl active:scale-95 sm:w-auto md:px-10 md:py-5 md:text-lg"
               >
                 Create Free Account
               </Link>
 
               <Link
-                to="/login"
+                to="/sign-in"
                 className="flex w-full items-center justify-center rounded-full border border-white/30 px-8 py-4 font-manrope text-base font-semibold text-white transition-all duration-200 hover:bg-white/10 active:scale-95 sm:w-auto md:px-10 md:py-5 md:text-lg"
               >
                 Sign In

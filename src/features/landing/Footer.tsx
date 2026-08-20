@@ -40,13 +40,13 @@ export default function Footer() {
               </li>
 
               <li>
-                <Link to="/signup" className="transition hover:text-emerald-600">
+                <Link to="/sign-up" className="transition hover:text-emerald-600">
                   Get Started
                 </Link>
               </li>
 
               <li>
-                <Link to="/login" className="transition hover:text-emerald-600">
+                <Link to="/sign-in" className="transition hover:text-emerald-600">
                   Sign In
                 </Link>
               </li>

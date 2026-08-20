@@ -25,7 +25,7 @@ export default function HeroSection() {
           {/* Primary actions */}
           <div className="flex flex-col gap-4 md:flex-row md:gap-5 ">
             <Link
-              to="/"
+              to="/sign-up"
               className="group flex justify-center cursor-pointer items-center gap-2 rounded-full bg-emerald-700 px-8 py-5 text-white shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-emerald-700/40 active:scale-96 dark:hover:shadow-emerald-700/40"
             >
               <span className="text-lg font-semibold">Get Started</span>
