@@ -1,7 +1,7 @@
 import express from "express";
-import { handleSignUp } from "../controllers/auth.controller.js";
+import { handleSignIn, handleSignUp } from "../controllers/auth.controller.js";
 
 export const authRouter = express.Router();
 
-// authRouter.post("/sign-in");
+authRouter.post("/sign-in", handleSignIn);
 authRouter.post("/sign-up", handleSignUp)

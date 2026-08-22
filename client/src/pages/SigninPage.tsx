@@ -1,4 +1,4 @@
-import AuthFormForLogin from "../features/auth/SignIn/AuthFormForLogin";
+import AuthFormForSignin from "../features/auth/SignIn/AuthFormForSignin";
 import BrandPanelForLogin from "../features/auth/SignIn/BrandPanelForLogin";
 
 export default function SigninPage() {
@@ -6,7 +6,7 @@ export default function SigninPage() {
     <>
       <div className="flex"> 
         <BrandPanelForLogin />
-        <AuthFormForLogin />
+        <AuthFormForSignin />
       </div>
     </>
   );

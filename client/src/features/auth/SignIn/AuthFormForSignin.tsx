@@ -1,10 +1,45 @@
-import { Link } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import useLocalStorage from "../../../hooks/useLocalStorage";
+import { useState } from "react";
+import { signin } from "../../../services/auth.service";
 
-export default function AuthFormForLogin() {
+export default function AuthFormForSignin() {
   const [email, setEmail] = useLocalStorage("signinEmail", "");
-  const [showPassword, setShowPassword] = useLocalStorage("signinShowPass", false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useLocalStorage(
+    "signinShowPass",
+    false,
+  );
+
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      await signin({ email, password });
+
+      setEmail("");
+      setPassword("");
+      setShowPassword(false);
+
+      navigate("/dashboard");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Something went wrong. Please try again!");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center bg-white p-6 dark:bg-slate-950 sm:p-8 lg:w-[55%]">
@@ -30,7 +65,30 @@ export default function AuthFormForLogin() {
         </div>
 
         {/* Form */}
-        <form action="#" method="POST" className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div
+              role="alert"
+              className="
+                flex items-start gap-3
+                rounded-lg
+                border border-red-200
+                bg-red-50
+                px-4 py-3
+                text-sm text-red-700
+                dark:border-red-900/50
+                dark:bg-red-950/30
+                dark:text-red-400
+              "
+            >
+              <AlertCircle
+                aria-hidden="true"
+                className="mt-0.5 h-5 w-5 shrink-0"
+              />
+
+              <p>{error}</p>
+            </div>
+          )}
           {/* Email */}
           <div className="space-y-2">
             <label
@@ -129,6 +187,7 @@ export default function AuthFormForLogin() {
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 placeholder="••••••••"
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="
                   h-13 w-full rounded-lg
@@ -203,7 +262,7 @@ export default function AuthFormForLogin() {
               dark:hover:bg-emerald-400
             "
           >
-            <span>Sign in</span>
+            <span>{isSubmitting ? "Signing in..." : "Sign in"}</span>
 
             <ArrowRight
               aria-hidden="true"

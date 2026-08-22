@@ -1,6 +1,6 @@
 import { USER } from "../models/user.model.js";
 
-export async function isLoggedIn(email: string) {
+export async function findUserByEmail(email: string) {
   try {
     const user = await USER.findOne({ email });
 

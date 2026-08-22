@@ -53,14 +53,12 @@ export default function AuthFormForSignup() {
         password,
       });
 
-      if (!error) {
-        setFullName("");
-        setEmail("");
-        setShowPassword(false);
-        setShowConfirmPassword(false);
-        
-        navigate("/sign-in");
-      }
+      navigate("/sign-in");
+
+      setFullName("");
+      setEmail("");
+      setShowPassword(false);
+      setShowConfirmPassword(false);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -96,12 +94,7 @@ export default function AuthFormForSignup() {
         </div>
 
         {/* Form */}
-        <form
-          action="#"
-          method="POST"
-          className="space-y-6"
-          onSubmit={handleSubmit}
-        >
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div
               role="alert"
