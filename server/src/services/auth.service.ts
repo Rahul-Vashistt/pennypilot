@@ -11,7 +11,22 @@ export async function findUserByEmail(email: string) {
     return user;
   } catch (err) {
     console.error(err);
-    throw new Error("isLoggedIn check failed:");
+    throw new Error("Could not find user by email");
+  }
+}
+
+export async function findUserById(_id: string) {
+  try {
+    const user = await USER.findOne({ _id });
+
+    if (!user) {
+      return null;
+    }
+
+    return user;
+  } catch (err) {
+    console.error(err);
+    throw new Error("Could not find user by userId");
   }
 }
 

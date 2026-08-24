@@ -24,7 +24,7 @@ export function createToken(user: User): string {
         userId: user._id.toString(),
       },
       secret,
-      { expiresIn: "7d" },
+      { expiresIn: "1d" },
     );
 
     return token;

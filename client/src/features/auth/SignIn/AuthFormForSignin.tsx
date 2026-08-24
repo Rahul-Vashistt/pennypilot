@@ -3,6 +3,7 @@ import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import { useState } from "react";
 import { signin } from "../../../services/auth.service";
+import useAuthStore from "../../../store/useAuth";
 
 export default function AuthFormForSignin() {
   const [email, setEmail] = useLocalStorage("signinEmail", "");
@@ -17,6 +18,9 @@ export default function AuthFormForSignin() {
 
   const navigate = useNavigate();
 
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -24,6 +28,8 @@ export default function AuthFormForSignin() {
 
     try {
       await signin({ email, password });
+
+      await checkAuth();
 
       setEmail("");
       setPassword("");
@@ -54,6 +60,37 @@ export default function AuthFormForSignin() {
         </div>
 
         {/* Header */}
+        {isAuthenticated && (
+          <div className="mb-3 flex justify-center md:justify-end">
+            <Link
+              to="/dashboard"
+              className="
+                group inline-flex items-center gap-1.5
+                rounded-xl px-3 py-2
+                text-sm font-medium
+                text-zinc-600 dark:text-zinc-400
+                transition-all duration-200
+                hover:bg-black/5 dark:hover:bg-white/5
+                hover:text-emerald-600 dark:hover:text-emerald-500
+                hover:font-semibold hover:tracking-tight
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-emerald-500
+              "
+            >
+              <span className="select-none">Go to Dashboard</span>
+
+              <ArrowRight
+                size={17}
+                className="
+                  transition-transform duration-200
+                  group-hover:translate-x-1
+                "
+              />
+            </Link>
+          </div>
+        )}
+
         <div className="mb-8 text-center lg:text-left">
           <h1 className="mb-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
             Welcome back
