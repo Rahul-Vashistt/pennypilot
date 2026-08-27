@@ -42,7 +42,6 @@ export async function createUser(
       password,
     });
   } catch (err) {
-    console.error(err);
     throw new Error("Failed to create user");
   }
 }
