@@ -4,10 +4,10 @@ import BrandPanelForLogin from "../features/auth/SignIn/BrandPanelForLogin";
 export default function SigninPage() {
   return (
     <>
-      <div className="flex"> 
+      <main className="flex"> 
         <BrandPanelForLogin />
         <AuthFormForSignin />
-      </div>
+      </main>
     </>
   );
 }

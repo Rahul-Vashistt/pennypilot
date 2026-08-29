@@ -1,6 +1,5 @@
-import Header from "../features/landing/Header";
 import DashboardHeader from "../features/dashboard/DashboardHeader";
-import Sidebar from "../features/dashboard/Sidebar";
+import Sidebar from "../components/Sidebar";
 
 import { Plus } from "lucide-react";
 import { SpendingOverview } from "../features/dashboard/SpendingOverview";
@@ -22,7 +21,7 @@ export default function DashboardPage() {
                 bg-emerald-700
                 text-slate-200 hover:text-white
                 font-bold font-hanken
-                flex items-center
+                hidden xl:flex items-center
                 overflow-hidden
                 shadow-xl hover:shadow-2xl
                 cursor-pointer
@@ -59,12 +58,12 @@ export default function DashboardPage() {
       <Sidebar />
       
 
-      <div className="flex flex-col gap-5 xl:pl-82 px-5 pt-10 h-full w-full">
+      <div className="flex flex-col gap-5 px-5 pt-10 h-full w-full">
           <DashboardHeader />
           <Stats />
       </div>
 
-      <div className="grid grid-cols-1 2xl:grid-cols-12 py-10 xl:pl-72">
+      <div className="grid grid-cols-1 2xl:grid-cols-12 py-10">
         <section className="px-5 h-full w-full flex flex-col gap-4 2xl:col-span-9">
           <SpendingOverview />
           <RecentTransactions/>

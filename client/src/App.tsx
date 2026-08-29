@@ -7,6 +7,8 @@ import SignupPage from "./pages/SignupPage";
 import useAuthStore from "./store/useAuth";
 import { useEffect } from "react";
 import ProtectedRoute from "./features/auth/ProtectedRoute";
+import TransactionsPage from "./pages/TransactionsPage";
+import AppLayout from "./components/AppLayout";
 
 export default function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
@@ -24,7 +26,10 @@ export default function App() {
           <Route path="/sign-up" element={<SignupPage />} />
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/transactions" element={<TransactionsPage />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>
