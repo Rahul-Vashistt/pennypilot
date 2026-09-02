@@ -18,9 +18,17 @@ import {
   type TransactionType,
 } from "../types/Transaction";
 
-export default function AddTransaction() {
-  const [isAddingTransaction, setIsAddingTransaction] = useState(false);
+interface AddTransactionProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onOpen: () => void;
+}
 
+export default function AddTransaction({
+  isOpen,
+  onClose,
+  onOpen,
+}: AddTransactionProps) {
   const [isExpense, setIsExpense] = useLocalStorage("isExpense", true);
 
   const incomeCategories = categories.Income;
@@ -29,26 +37,29 @@ export default function AddTransaction() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
 
-  const [category, setCategory] = useState<Category>(expenseCategories[0]);
+  const [category, setCategory] = useState<Category>(
+    expenseCategories[0]
+  );
 
   const [transactionDate, setTransactionDate] = useState(
-    new Date().toISOString().split("T")[0],
+    new Date().toISOString().split("T")[0]
   );
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
-    PAYMENT_METHODS[0],
+    PAYMENT_METHODS[0]
   );
 
-  const transactionType: TransactionType = isExpense ? "Expense" : "Income";
+  const transactionType: TransactionType = isExpense
+    ? "Expense"
+    : "Income";
 
   const handleTransactionTypeChange = (expense: boolean) => {
     setIsExpense(expense);
-
-    setCategory(expense ? expenseCategories[0] : incomeCategories[0]);
-  };
-
-  const handleClose = () => {
-    setIsAddingTransaction(false);
+    setCategory(
+      expense
+        ? expenseCategories[0]
+        : incomeCategories[0]
+    );
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -65,124 +76,121 @@ export default function AddTransaction() {
 
     console.log(transaction);
 
-    // TODO:
-    // Send transaction to your backend here.
-
-    // Reset form
     setDescription("");
     setAmount("");
-    setCategory(isExpense ? expenseCategories[0] : incomeCategories[0]);
+    setCategory(
+      isExpense
+        ? expenseCategories[0]
+        : incomeCategories[0]
+    );
     setPaymentMethod(PAYMENT_METHODS[0]);
     setTransactionDate(new Date().toISOString().split("T")[0]);
 
-    // Close modal
-    setIsAddingTransaction(false);
+    onClose();
   };
 
   return (
     <>
-      {/* Floating Add Transaction Button */}
       <button
         type="button"
-        onClick={() => setIsAddingTransaction(true)}
+        onClick={onOpen}
         className={`
-          fixed bottom-6 right-6 z-50 lg:bottom-10 lg:right-10
-          group
-          hidden xl:flex
-          h-16 w-16 hover:w-56
-          items-center
-          overflow-hidden
-          rounded-full
-          bg-emerald-700
-          text-slate-200 hover:text-white
-          font-bold font-hanken
-          shadow-xl hover:shadow-2xl
-          cursor-pointer
-          transition-all duration-300
-          active:scale-95
-
-          ${
-            isAddingTransaction
-              ? "pointer-events-none opacity-0"
-              : "opacity-100"
-          }
+          fixed bottom-6 right-6 z-50 hidden h-16 w-16 items-center
+          overflow-hidden rounded-full bg-emerald-700 text-slate-200
+          shadow-xl transition-all duration-300 hover:w-56 hover:text-white
+          hover:shadow-2xl active:scale-95 xl:flex
+          ${isOpen ? "pointer-events-none opacity-0" : "opacity-100"}
         `}
       >
         <span className="flex h-16 w-16 shrink-0 items-center justify-center">
           <Plus
             size={28}
             strokeWidth={2.5}
-            className="
-              transition-transform duration-300 delay-75
-              group-hover:-rotate-90
-            "
+            className="transition-transform duration-300 group-hover:-rotate-90"
           />
         </span>
 
-        <span
-          className="
-            whitespace-nowrap
-            opacity-0
-            group-hover:opacity-100
-            transition-opacity duration-200
-            delay-75
-            uppercase tracking-wider
-            -translate-x-2.5
-          "
-        >
+        <span className="whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           Add Transaction
         </span>
       </button>
 
-      {/* Transaction Modal */}
-      {isAddingTransaction && (
-        <section className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div
-            onClick={handleClose}
-            className="absolute inset-0 bg-black/20 backdrop-blur-xl"
+      {isOpen && (
+        <section
+          className="
+            fixed inset-0 z-60 flex items-end justify-center
+            sm:items-center sm:p-4
+          "
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close transaction form"
+            className="absolute inset-0 cursor-default bg-black/40 backdrop-blur-sm"
           />
 
           <form
             onSubmit={handleSubmit}
-            className="relative z-10 w-full max-w-lg"
+            className="
+              relative z-10 flex w-full flex-col
+              rounded-t-3xl bg-white shadow-2xl
+              dark:bg-slate-700
+              sm:max-h-[90vh] sm:max-w-lg sm:rounded-3xl
+              md:max-w-xl
+            "
           >
-            <div className="flex flex-col gap-5 px-5 py-5 bg-white border border-zinc-200 dark:bg-slate-700 dark:border-zinc-500 shadow-2xl rounded-3xl">
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl text-black dark:text-white font-semibold tracking-tight">
-                    New Transaction
-                  </h2>
+            <div
+              className="
+                flex items-center justify-between border-b
+                border-zinc-100 px-4 py-4
+                dark:border-slate-600
+                sm:px-6
+              "
+            >
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-xl">
+                  New Transaction
+                </h2>
 
-                  <p className="text-sm text-zinc-500 dark:text-zinc-300">
-                    Add a new income or expense
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-slate-600 transition-all"
-                  aria-label="Close transaction form"
-                >
-                  <X size={22} />
-                </button>
+                <p className="text-xs text-zinc-500 dark:text-zinc-300 sm:text-sm">
+                  Add a new income or expense
+                </p>
               </div>
 
-              {/* Transaction Type */}
-              <div className="w-full flex bg-slate-100 dark:bg-slate-500 rounded-2xl p-1.5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="
+                  ml-4 flex h-10 w-10 shrink-0 items-center justify-center
+                  rounded-xl text-zinc-500 transition-all
+                  hover:bg-zinc-100 hover:text-zinc-900
+                  active:scale-95
+                  dark:text-zinc-300 dark:hover:bg-slate-600 dark:hover:text-white
+                "
+                aria-label="Close transaction form"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <div
+              className="
+                flex flex-col gap-4 overflow-y-auto px-4 py-4
+                pb-[calc(1rem+env(safe-area-inset-bottom))]
+                sm:max-h-[calc(90vh-73px)] sm:px-6 sm:py-5
+              "
+            >
+              <div className="flex w-full rounded-2xl bg-slate-100 p-1.5 dark:bg-slate-600">
                 <button
                   type="button"
                   onClick={() => handleTransactionTypeChange(true)}
                   className={`
-                    font-hanken font-semibold leading-relaxed
-                    py-3 px-4 w-1/2 cursor-pointer select-none
+                    w-1/2 rounded-xl px-4 py-3 text-sm font-semibold
                     transition-all duration-200
                     ${
                       isExpense
-                        ? "bg-emerald-700 dark:bg-emerald-600 rounded-xl text-white shadow-sm"
-                        : "text-zinc-600 dark:text-zinc-300"
+                        ? "bg-emerald-700 text-white shadow-sm dark:bg-emerald-600"
+                        : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
                     }
                   `}
                 >
@@ -193,13 +201,12 @@ export default function AddTransaction() {
                   type="button"
                   onClick={() => handleTransactionTypeChange(false)}
                   className={`
-                    font-hanken font-semibold leading-relaxed
-                    py-3 px-4 w-1/2 cursor-pointer select-none
+                    w-1/2 rounded-xl px-4 py-3 text-sm font-semibold
                     transition-all duration-200
                     ${
                       !isExpense
-                        ? "bg-emerald-700 dark:bg-emerald-600 rounded-xl text-white shadow-sm"
-                        : "text-zinc-600 dark:text-zinc-300"
+                        ? "bg-emerald-700 text-white shadow-sm dark:bg-emerald-600"
+                        : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
                     }
                   `}
                 >
@@ -207,19 +214,18 @@ export default function AddTransaction() {
                 </button>
               </div>
 
-              {/* Description */}
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="transactionDesc"
-                  className="text-sm text-zinc-800 dark:text-zinc-200 font-semibold"
+                  className="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
                 >
                   Description
                 </label>
 
-                <div className="flex items-center relative px-3 py-4 bg-slate-100/30 dark:bg-slate-800/30 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+                <div className="relative flex items-center rounded-2xl border border-slate-200/70 bg-slate-100/50 px-3 py-3 dark:border-slate-700 dark:bg-slate-800/50">
                   <FileText
-                    size={24}
-                    className="absolute left-3 text-zinc-500 dark:text-zinc-300 pointer-events-none"
+                    size={22}
+                    className="pointer-events-none absolute left-3 text-zinc-500 dark:text-zinc-300"
                   />
 
                   <input
@@ -230,24 +236,28 @@ export default function AddTransaction() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
-                    className="w-full bg-transparent pl-10 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 outline-none rounded-lg"
+                    className="
+                      w-full min-w-0 bg-transparent pl-9 text-sm
+                      text-zinc-800 outline-none
+                      placeholder:text-zinc-500
+                      dark:text-zinc-200
+                    "
                   />
                 </div>
               </div>
 
-              {/* Amount */}
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="transactionAmt"
-                  className="text-sm text-zinc-800 dark:text-zinc-200 font-semibold"
+                  className="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
                 >
                   Amount
                 </label>
 
-                <div className="flex items-center relative px-3 py-4 bg-slate-100/30 dark:bg-slate-800/30 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+                <div className="relative flex items-center rounded-2xl border border-slate-200/70 bg-slate-100/50 px-3 py-3 dark:border-slate-700 dark:bg-slate-800/50">
                   <IndianRupee
-                    size={24}
-                    className="absolute left-3 text-zinc-500 dark:text-zinc-300 pointer-events-none"
+                    size={22}
+                    className="pointer-events-none absolute left-3 text-zinc-500 dark:text-zinc-300"
                   />
 
                   <input
@@ -256,90 +266,105 @@ export default function AddTransaction() {
                     name="amount"
                     min="0.01"
                     step="0.01"
+                    inputMode="decimal"
                     placeholder="0.00"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     required
-                    className="w-full bg-transparent pl-10 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-500 outline-none rounded-lg"
+                    className="
+                      w-full min-w-0 bg-transparent pl-9 text-sm
+                      text-zinc-800 outline-none
+                      placeholder:text-zinc-500
+                      dark:text-zinc-200
+                    "
                   />
                 </div>
               </div>
 
-              {/* Category + Date */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Category */}
-                <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="flex min-w-0 flex-col gap-2">
                   <label
                     htmlFor="transactionCateg"
-                    className="text-sm text-zinc-800 dark:text-zinc-200 font-semibold"
+                    className="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
                   >
                     Category
                   </label>
 
-                  <div className="flex items-center relative px-3 py-4 bg-slate-100/30 dark:bg-slate-800/30 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+                  <div className="relative flex items-center rounded-2xl border border-slate-200/70 bg-slate-100/50 px-3 py-3 dark:border-slate-700 dark:bg-slate-800/50">
                     <ListSortDescending
-                      size={24}
-                      className="absolute left-3 text-zinc-500 dark:text-zinc-300 pointer-events-none"
+                      size={22}
+                      className="pointer-events-none absolute left-3 text-zinc-500 dark:text-zinc-300"
                     />
 
                     <select
                       id="transactionCateg"
                       name="category"
                       value={category}
-                      onChange={(e) => setCategory(e.target.value as Category)}
-                      className="w-full bg-transparent pl-10 text-zinc-800 dark:text-zinc-200 outline-none"
+                      onChange={(e) =>
+                        setCategory(e.target.value as Category)
+                      }
+                      className="
+                        w-full min-w-0 appearance-none bg-transparent
+                        pl-9 pr-1 text-sm text-zinc-800 outline-none
+                        dark:text-zinc-200
+                      "
                     >
-                      {(isExpense ? expenseCategories : incomeCategories).map(
-                        (cat) => (
-                          <option
-                            key={cat}
-                            value={cat}
-                            className="text-zinc-800"
-                          >
-                            {cat}
-                          </option>
-                        ),
-                      )}
+                      {(isExpense
+                        ? expenseCategories
+                        : incomeCategories
+                      ).map((cat) => (
+                        <option
+                          key={cat}
+                          value={cat}
+                          className="text-zinc-900"
+                        >
+                          {cat}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
 
-                {/* Date */}
-                <div className="flex flex-col gap-2">
+                <div className="flex min-w-0 flex-col gap-2">
                   <label
                     htmlFor="transactionDate"
-                    className="text-sm text-zinc-800 dark:text-zinc-200 font-semibold"
+                    className="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
                   >
                     Date
                   </label>
 
-                  <div className="px-3 py-4 bg-slate-100/30 dark:bg-slate-800/30 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+                  <div className="rounded-2xl border border-slate-200/70 bg-slate-100/50 px-3 py-3 dark:border-slate-700 dark:bg-slate-800/50">
                     <input
                       type="date"
                       id="transactionDate"
                       name="transactionDate"
                       value={transactionDate}
-                      onChange={(e) => setTransactionDate(e.target.value)}
+                      onChange={(e) =>
+                        setTransactionDate(e.target.value)
+                      }
                       required
-                      className="w-full bg-transparent text-zinc-800 dark:text-zinc-200 outline-none"
+                      className="
+                        w-full min-w-0 bg-transparent text-sm
+                        text-zinc-800 outline-none
+                        dark:text-zinc-200
+                      "
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Payment Method */}
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="transactionPaymentMethod"
-                  className="text-sm text-zinc-800 dark:text-zinc-200 font-semibold"
+                  className="text-sm font-semibold text-zinc-800 dark:text-zinc-200"
                 >
                   Payment Method
                 </label>
 
-                <div className="flex items-center relative px-3 py-4 bg-slate-100/30 dark:bg-slate-800/30 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+                <div className="relative flex items-center rounded-2xl border border-slate-200/70 bg-slate-100/50 px-3 py-3 dark:border-slate-700 dark:bg-slate-800/50">
                   <WalletCards
-                    size={24}
-                    className="absolute left-3 text-zinc-500 dark:text-zinc-300 pointer-events-none"
+                    size={22}
+                    className="pointer-events-none absolute left-3 text-zinc-500 dark:text-zinc-300"
                   />
 
                   <select
@@ -347,15 +372,21 @@ export default function AddTransaction() {
                     name="paymentMethod"
                     value={paymentMethod}
                     onChange={(e) =>
-                      setPaymentMethod(e.target.value as PaymentMethod)
+                      setPaymentMethod(
+                        e.target.value as PaymentMethod
+                      )
                     }
-                    className="w-full bg-transparent pl-10 text-zinc-800 dark:text-zinc-200 outline-none"
+                    className="
+                      w-full min-w-0 appearance-none bg-transparent
+                      pl-9 pr-1 text-sm text-zinc-800 outline-none
+                      dark:text-zinc-200
+                    "
                   >
                     {PAYMENT_METHODS.map((method) => (
                       <option
                         key={method}
                         value={method}
-                        className="text-zinc-800"
+                        className="text-zinc-900"
                       >
                         {method}
                       </option>
@@ -364,20 +395,15 @@ export default function AddTransaction() {
                 </div>
               </div>
 
-              {/* Save Button */}
               <button
                 type="submit"
                 className="
-                  w-full py-4
-                  bg-emerald-700 dark:bg-emerald-600
-                  rounded-2xl
-                  text-white
-                  font-semibold font-manrope
-                  hover:bg-emerald-800
-                  dark:hover:bg-emerald-500
-                  active:scale-[0.98]
-                  cursor-pointer
+                  mt-1 w-full rounded-2xl bg-emerald-700 py-3.5
+                  text-sm font-semibold text-white shadow-sm
                   transition-all duration-200
+                  hover:bg-emerald-800
+                  active:scale-[0.98]
+                  dark:bg-emerald-600 dark:hover:bg-emerald-500
                 "
               >
                 Save Transaction

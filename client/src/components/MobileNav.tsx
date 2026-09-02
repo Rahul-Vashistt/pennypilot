@@ -6,7 +6,7 @@ import {
   ChartNoAxesCombined,
 } from "lucide-react";
 
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 const navigation = [
   {
@@ -31,9 +31,11 @@ const navigation = [
   },
 ];
 
-export default function MobileNav() {
-  const navigate = useNavigate();
+interface MobileNavProps {
+  onAddTransaction: () => void;
+}
 
+export default function MobileNav({ onAddTransaction }: MobileNavProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-20 items-center justify-between border-t border-zinc-200 bg-green-50/90 px-6 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl dark:border-slate-700 dark:bg-slate-900/90 xl:hidden">
       {/* First two navigation items */}
@@ -53,9 +55,7 @@ export default function MobileNav() {
           >
             <Icon size={22} />
 
-            <span className="text-[10px] font-medium">
-              {name}
-            </span>
+            <span className="text-[10px] font-medium">{name}</span>
           </NavLink>
         ))}
       </div>
@@ -64,7 +64,7 @@ export default function MobileNav() {
       <div className="flex w-20 shrink-0 items-center justify-center">
         <button
           type="button"
-          onClick={() => navigate("/transactions/new")}
+          onClick={onAddTransaction}
           className="-mt-15 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-700 text-white shadow-lg transition-transform active:scale-95"
           aria-label="Add transaction"
         >
@@ -89,9 +89,7 @@ export default function MobileNav() {
           >
             <Icon size={22} />
 
-            <span className="text-[10px] font-medium">
-              {name}
-            </span>
+            <span className="text-[10px] font-medium">{name}</span>
           </NavLink>
         ))}
       </div>
