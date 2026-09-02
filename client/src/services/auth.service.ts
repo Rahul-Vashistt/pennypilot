@@ -12,7 +12,7 @@ interface SigninData {
   password: string;
 }
 
-export async function signup(data: SignupData) {
+export const signup = async (data: SignupData) => {
   try {
     await api.post("/auth/sign-up", data);
   } catch (err: unknown) {
@@ -26,7 +26,7 @@ export async function signup(data: SignupData) {
   }
 }
 
-export async function signin(data: SigninData) {
+export const signin = async (data: SigninData) => {
   try {
     await api.post("/auth/sign-in", data);
   } catch (err: unknown) {

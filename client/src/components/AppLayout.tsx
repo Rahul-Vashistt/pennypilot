@@ -2,10 +2,13 @@ import MobileHeader from "./MobileHeader";
 import MobileNav from "./MobileNav";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
+import AddTransaction from "./AddTransaction";
 
 export default function AppLayout() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
+      <AddTransaction />
+
       <Sidebar />
 
       <MobileHeader />

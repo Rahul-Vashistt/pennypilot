@@ -1,9 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
-import useAuthStore from "../../store/useAuth";
+import useAuthStore from "../store/useAuth";
 
 function AuthLoading() {
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#fafaf7] text-zinc-950 transition-colors duration-300 dark:bg-[#0b0d0c] dark:text-white">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center overflow-hidden bg-[#fafaf7] text-zinc-950 transition-colors duration-300 dark:bg-[#0b0d0c] dark:text-white">
             {/* Ambient background */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(16,185,129,0.10),transparent_32%)] dark:bg-[radial-gradient(circle_at_50%_42%,rgba(16,185,129,0.13),transparent_32%)]" />
 
@@ -11,10 +11,10 @@ function AuthLoading() {
             <div
                 className="
                     absolute inset-0 opacity-[0.035]
-                    [background-image:linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)]
-                    [background-size:32px_32px]
+                    bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)]
+                    bg-size-[32px_32px]
                     dark:opacity-[0.025]
-                    dark:[background-image:linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)]
+                    dark:bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)]
                 "
             />
 
@@ -32,12 +32,12 @@ function AuthLoading() {
                             rounded-full
                             border-[3px]
                             border-emerald-500
-                            bg-gradient-to-br from-emerald-300 via-emerald-400 to-emerald-600
+                            bg-linear-to-br from-emerald-300 via-emerald-400 to-emerald-600
                             shadow-[0_12px_30px_rgba(16,185,129,0.25)]
                             dark:shadow-[0_12px_30px_rgba(16,185,129,0.18)]
                         "
                     >
-                        <div className="absolute inset-[5px] rounded-full border border-white/30" />
+                        <div className="absolute inset-1.25 rounded-full border border-white/30" />
 
                         <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white">
                             $
@@ -48,11 +48,11 @@ function AuthLoading() {
                     <div
                         className="
                             absolute bottom-1 left-1/2 h-12 w-12
-                            -translate-x-[58%]
+                            translate-x-[-58%]
                             rounded-full
                             border-[3px]
                             border-zinc-300
-                            bg-gradient-to-br from-zinc-100 to-zinc-300
+                            bg-linear-to-br from-zinc-100 to-zinc-300
                             shadow-sm
                             dark:border-zinc-600
                             dark:from-zinc-700
@@ -65,16 +65,16 @@ function AuthLoading() {
                     <div
                         className="
                             absolute bottom-0 left-1/2 h-12 w-12
-                            -translate-x-[42%]
+                            translate-x-[-42%]
                             rounded-full
                             border-[3px]
                             border-emerald-600
-                            bg-gradient-to-br from-emerald-400 to-emerald-600
+                            bg-linear-to-br from-emerald-400 to-emerald-600
                             shadow-[0_8px_24px_rgba(16,185,129,0.18)]
                             dark:shadow-[0_8px_24px_rgba(16,185,129,0.12)]
                         "
                     >
-                        <div className="absolute inset-[5px] rounded-full border border-white/20" />
+                        <div className="absolute inset-1.25 rounded-full border border-white/20" />
                     </div>
                 </div>
 

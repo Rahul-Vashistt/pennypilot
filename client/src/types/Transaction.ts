@@ -59,11 +59,4 @@ export interface Transaction {
   createdAt: string;
 }
 
-export interface CreateTransactionInput {
-  description: string;
-  category: Category;
-  paymentMethod: PaymentMethod;
-  transactionType: TransactionType;
-  amount: number;
-  transactionDate: string;
-}
+export type CreateTransaction = Omit<Transaction, "_id" | "createdAt">;

@@ -6,7 +6,7 @@ import SigninPage from "./pages/SigninPage";
 import SignupPage from "./pages/SignupPage";
 import useAuthStore from "./store/useAuth";
 import { useEffect } from "react";
-import ProtectedRoute from "./features/auth/ProtectedRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 import TransactionsPage from "./pages/TransactionsPage";
 import AppLayout from "./components/AppLayout";
 

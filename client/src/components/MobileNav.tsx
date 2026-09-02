@@ -65,7 +65,7 @@ export default function MobileNav() {
         <button
           type="button"
           onClick={() => navigate("/transactions/new")}
-          className="-mt-12 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-700 text-white shadow-lg transition-transform active:scale-95"
+          className="-mt-15 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-700 text-white shadow-lg transition-transform active:scale-95"
           aria-label="Add transaction"
         >
           <Plus size={28} />

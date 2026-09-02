@@ -5,7 +5,7 @@ import {
 } from "../services/transaction.service.js";
 
 export async function handleAddTransaction(req: Request, res: Response) {
-  const { description, category, paymentMethod, transactionType, amount } =
+  const { description, category, paymentMethod, transactionType, amount, transactionDate } =
     req.body;
 
   try {
@@ -15,6 +15,7 @@ export async function handleAddTransaction(req: Request, res: Response) {
       paymentMethod,
       transactionType,
       amount,
+      transactionDate,
     });
 
     return res.status(201).json({
