@@ -5,11 +5,17 @@ import {
 } from "../services/transaction.service.js";
 
 export async function handleAddTransaction(req: Request, res: Response) {
-  const { description, category, paymentMethod, transactionType, amount, transactionDate } =
-    req.body;
+  const {
+    description,
+    category,
+    paymentMethod,
+    transactionType,
+    amount,
+    transactionDate,
+  } = req.body;
 
   try {
-    await addTransaction({
+    const transaction = await addTransaction({
       description,
       category,
       paymentMethod,
@@ -19,7 +25,7 @@ export async function handleAddTransaction(req: Request, res: Response) {
     });
 
     return res.status(201).json({
-      message: "New transaction added successfully!",
+      transaction,
     });
   } catch (err) {
     return res.status(500).json({

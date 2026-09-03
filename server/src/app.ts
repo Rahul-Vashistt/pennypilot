@@ -20,6 +20,6 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
-app.use("/transaction", transactionRouter);
+app.use("/api/transactions", transactionRouter);
 
 export default app;

@@ -1,8 +1,15 @@
 import api from "../api/axios";
-import type { Transaction } from "../types/Transaction";
+import type { CreateTransaction, Transaction } from "../types/Transaction";
+
 
 export const getTransactions = async (): Promise<Transaction[]> => {
-  const response = await api.get("/transactions");
+  const res = await api.get("/transactions");
 
-  return response.data;
+  return res.data.allTransactions ?? []; 
 };
+
+export const createTransaction = async (data: CreateTransaction) => {
+  const res = await api.post("/transactions", data)
+
+  return res.data;
+}

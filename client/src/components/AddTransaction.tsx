@@ -17,6 +17,7 @@ import {
   type PaymentMethod,
   type TransactionType,
 } from "../types/Transaction";
+import { useCreateTransaction } from "../hooks/transactions/useCreateTransaction";
 
 interface AddTransactionProps {
   isOpen: boolean;
@@ -29,6 +30,8 @@ export default function AddTransaction({
   onClose,
   onOpen,
 }: AddTransactionProps) {
+  const { mutate, isPending } = useCreateTransaction();
+
   const [isExpense, setIsExpense] = useLocalStorage("isExpense", true);
 
   const incomeCategories = categories.Income;
@@ -37,29 +40,21 @@ export default function AddTransaction({
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
 
-  const [category, setCategory] = useState<Category>(
-    expenseCategories[0]
-  );
+  const [category, setCategory] = useState<Category>(expenseCategories[0]);
 
   const [transactionDate, setTransactionDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
-    PAYMENT_METHODS[0]
+    PAYMENT_METHODS[0],
   );
 
-  const transactionType: TransactionType = isExpense
-    ? "Expense"
-    : "Income";
+  const transactionType: TransactionType = isExpense ? "Expense" : "Income";
 
   const handleTransactionTypeChange = (expense: boolean) => {
     setIsExpense(expense);
-    setCategory(
-      expense
-        ? expenseCategories[0]
-        : incomeCategories[0]
-    );
+    setCategory(expense ? expenseCategories[0] : incomeCategories[0]);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -74,19 +69,17 @@ export default function AddTransaction({
       transactionDate,
     };
 
-    console.log(transaction);
+    mutate(transaction, {
+      onSuccess: () => {
+        setDescription("");
+        setAmount("");
+        setCategory(isExpense ? expenseCategories[0] : incomeCategories[0]);
+        setPaymentMethod(PAYMENT_METHODS[0]);
+        setTransactionDate(new Date().toISOString().split("T")[0]);
 
-    setDescription("");
-    setAmount("");
-    setCategory(
-      isExpense
-        ? expenseCategories[0]
-        : incomeCategories[0]
-    );
-    setPaymentMethod(PAYMENT_METHODS[0]);
-    setTransactionDate(new Date().toISOString().split("T")[0]);
-
-    onClose();
+        onClose();
+      },
+    });
   };
 
   return (
@@ -98,7 +91,7 @@ export default function AddTransaction({
           fixed bottom-6 right-6 z-50 hidden h-16 w-16 items-center
           overflow-hidden rounded-full bg-emerald-700 text-slate-200
           shadow-xl transition-all duration-300 hover:w-56 hover:text-white
-          hover:shadow-2xl active:scale-95 xl:flex
+          hover:shadow-2xl active:scale-95 xl:flex group
           ${isOpen ? "pointer-events-none opacity-0" : "opacity-100"}
         `}
       >
@@ -106,7 +99,7 @@ export default function AddTransaction({
           <Plus
             size={28}
             strokeWidth={2.5}
-            className="transition-transform duration-300 group-hover:-rotate-90"
+            className="transition-transform duration-300 group-hover:-rotate-90 delay-75"
           />
         </span>
 
@@ -126,7 +119,7 @@ export default function AddTransaction({
             type="button"
             onClick={onClose}
             aria-label="Close transaction form"
-            className="absolute inset-0 cursor-default bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 cursor-default bg-black/40 backdrop-blur-xs"
           />
 
           <form
@@ -300,27 +293,24 @@ export default function AddTransaction({
                       id="transactionCateg"
                       name="category"
                       value={category}
-                      onChange={(e) =>
-                        setCategory(e.target.value as Category)
-                      }
+                      onChange={(e) => setCategory(e.target.value as Category)}
                       className="
                         w-full min-w-0 appearance-none bg-transparent
                         pl-9 pr-1 text-sm text-zinc-800 outline-none
                         dark:text-zinc-200
                       "
                     >
-                      {(isExpense
-                        ? expenseCategories
-                        : incomeCategories
-                      ).map((cat) => (
-                        <option
-                          key={cat}
-                          value={cat}
-                          className="text-zinc-900"
-                        >
-                          {cat}
-                        </option>
-                      ))}
+                      {(isExpense ? expenseCategories : incomeCategories).map(
+                        (cat) => (
+                          <option
+                            key={cat}
+                            value={cat}
+                            className="text-zinc-900"
+                          >
+                            {cat}
+                          </option>
+                        ),
+                      )}
                     </select>
                   </div>
                 </div>
@@ -339,9 +329,7 @@ export default function AddTransaction({
                       id="transactionDate"
                       name="transactionDate"
                       value={transactionDate}
-                      onChange={(e) =>
-                        setTransactionDate(e.target.value)
-                      }
+                      onChange={(e) => setTransactionDate(e.target.value)}
                       required
                       className="
                         w-full min-w-0 bg-transparent text-sm
@@ -372,9 +360,7 @@ export default function AddTransaction({
                     name="paymentMethod"
                     value={paymentMethod}
                     onChange={(e) =>
-                      setPaymentMethod(
-                        e.target.value as PaymentMethod
-                      )
+                      setPaymentMethod(e.target.value as PaymentMethod)
                     }
                     className="
                       w-full min-w-0 appearance-none bg-transparent
@@ -406,7 +392,7 @@ export default function AddTransaction({
                   dark:bg-emerald-600 dark:hover:bg-emerald-500
                 "
               >
-                Save Transaction
+                {isPending ? "Saving Transaction..." : "Save Transaction"}
               </button>
             </div>
           </form>

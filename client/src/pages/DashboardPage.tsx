@@ -1,7 +1,6 @@
 import DashboardHeader from "../features/dashboard/DashboardHeader";
 import Sidebar from "../components/Sidebar";
 
-import { Plus } from "lucide-react";
 import { SpendingOverview } from "../features/dashboard/SpendingOverview";
 import RecentTransactions from "../features/dashboard/RecentTransactions";
 import { Stats } from "../features/dashboard/Stats";

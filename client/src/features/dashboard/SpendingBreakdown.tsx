@@ -157,8 +157,8 @@ export default function SpendingBreakdown() {
 
       {/* Category breakdown displayed below the chart. */}
       <div className="mt-4 space-y-3">
-        {data.map((item) => (
-          <div className="flex items-center justify-between">
+        {data.map((item, index) => (
+          <div key={index} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span
                 className="h-2.5 w-2.5 rounded-full"
