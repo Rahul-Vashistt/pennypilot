@@ -38,6 +38,10 @@ const transactionSchema = new Schema<Transaction>({
     required: true,
     min: 0,
   },
+
+  transactionDate: {
+    type: String
+  }
 });
 
 const TransactionModel = mongoose.model<Transaction>(

@@ -1,33 +1,23 @@
 import { USER } from "../models/user.model.js";
 
 export async function findUserByEmail(email: string) {
-  try {
-    const user = await USER.findOne({ email });
+  const user = await USER.findOne({ email });
 
-    if (!user) {
-      return null;
-    }
-
-    return user;
-  } catch (err) {
-    console.error(err);
-    throw new Error("Could not find user by email");
+  if (!user) {
+    return null;
   }
+
+  return user;
 }
 
 export async function findUserById(_id: string) {
-  try {
-    const user = await USER.findOne({ _id });
+  const user = await USER.findOne({ _id });
 
-    if (!user) {
-      return null;
-    }
-
-    return user;
-  } catch (err) {
-    console.error(err);
-    throw new Error("Could not find user by userId");
+  if (!user) {
+    return null;
   }
+
+  return user;
 }
 
 export async function createUser(
@@ -35,13 +25,9 @@ export async function createUser(
   email: string,
   password: string,
 ) {
-  try {
-    await USER.create({
-      fullName,
-      email,
-      password,
-    });
-  } catch (err) {
-    throw new Error("Failed to create user");
-  }
+  await USER.create({
+    fullName,
+    email,
+    password,
+  });
 }

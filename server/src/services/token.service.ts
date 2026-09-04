@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import type { User } from "../types/userType.js";
+import { AppError } from "../utils/AppError.js";
 
 interface CustomJwtPayload {
-    userId: string;
+  userId: string;
 }
 
 const fetchJwtSecret = () => {
@@ -19,32 +20,36 @@ export function createToken(user: User): string {
   const secret = fetchJwtSecret();
 
   try {
-    const token = jwt.sign(
+    return jwt.sign(
       {
         userId: user._id.toString(),
       },
       secret,
-      { expiresIn: "1d" },
+      {
+        expiresIn: "1d",
+      },
     );
-
-    return token;
   } catch (err) {
     throw new Error("Failed to create token");
   }
 }
 
-export function verifyToken(token: string) {
-    const secret = fetchJwtSecret();
+export function verifyToken(token: string): string {
+  const secret = fetchJwtSecret();
 
-    try {
-        const decoded = jwt.verify(token, secret) as CustomJwtPayload;
+  try {
+    const decoded = jwt.verify(token, secret) as CustomJwtPayload;
 
-        if (typeof decoded.userId !== "string" || !decoded.userId) {
-            return null;
-        }
-
-        return decoded.userId;
-    } catch {
-        return null;
+    if (typeof decoded.userId !== "string" || !decoded.userId) {
+      throw new AppError("Invalid token", 401);
     }
+
+    return decoded.userId;
+  } catch (err) {
+    if (err instanceof AppError) {
+      throw err;
+    }
+
+    throw new AppError("Invalid or expired token", 401);
+  }
 }

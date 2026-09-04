@@ -4,11 +4,13 @@ import Sidebar from "../components/Sidebar";
 import TransactionList from "../features/transactions/TransactionList";
 import TransactionLoading from "../components/loading/TransactionLoading";
 import { useTransactions } from "../hooks/transactions/useTransactions";
+import { useDeleteTransaction } from "../hooks/transactions/useDeleteTransaction";
 
 export default function TransactionsPage() {
   const [transactionCount, setTransactionCount] = useState(5);
 
   const { data: transactions, isLoading, isError, error } = useTransactions();
+  const { mutate: deleteTransaction } = useDeleteTransaction();
 
   if (isLoading) {
     return (
@@ -44,6 +46,7 @@ export default function TransactionsPage() {
         <TransactionList
           transactions={transactions}
           onTransactionsCountChange={setTransactionCount}
+          onDelete={deleteTransaction}
         />
       </section>
     </main>

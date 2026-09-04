@@ -2,30 +2,29 @@ import type { Request, Response } from "express";
 import { createUser, findUserByEmail } from "../services/auth.service.js";
 import { comparePassword, hashPassword } from "../utils/password.js";
 import { createToken } from "../services/token.service.js";
+import { AppError } from "../utils/AppError.js";
 
 export async function handleSignIn(req: Request, res: Response) {
   const { email, password } = req.body;
 
+  if (!email) {
+    throw new AppError("Email cannot be blank", 400);
+  }
+
   if (!password) {
-    return res.status(400).json({
-      message: "Password cannot be blank",
-    });
+    throw new AppError("Password cannot be blank", 400);
   }
 
   const user = await findUserByEmail(email);
 
   if (!user) {
-    return res.status(401).json({
-      message: "Invalid email or password",
-    });
+    throw new AppError("Invalid email or password", 401);
   }
 
   const isPasswordValid = await comparePassword(password, user.password);
 
   if (!isPasswordValid) {
-    return res.status(401).json({
-      message: "Invalid email or password",
-    });
+    throw new AppError("Invalid email or password", 401);
   }
 
   const token = createToken(user);
@@ -42,29 +41,31 @@ export async function handleSignIn(req: Request, res: Response) {
 }
 
 export async function handleSignUp(req: Request, res: Response) {
-  try {
-    const { fullName, email, password } = req.body;
+  const { fullName, email, password } = req.body;
 
-    const user = await findUserByEmail(email);
-
-    if (user) {
-      return res.status(409).json({
-        message: "Email is already registered. Please log in",
-      });
-    }
-
-    const hashedPassword = await hashPassword(password);
-
-    await createUser(fullName, email, hashedPassword);
-
-    return res.status(201).json({
-      message: "New user successfully created",
-    });
-  } catch (err) {
-    console.error(err);
-
-    return res.status(500).json({
-      message: "Something went wrong. Please try again.",
-    });
+  if (!fullName) {
+    throw new AppError("Full name cannot be blank", 400);
   }
+
+  if (!email) {
+    throw new AppError("Email cannot be blank", 400);
+  }
+
+  if (!password) {
+    throw new AppError("Password cannot be blank", 400);
+  }
+
+  const user = await findUserByEmail(email);
+
+  if (user) {
+    throw new AppError("Email is already registered. Please log in", 409);
+  }
+
+  const hashedPassword = await hashPassword(password);
+
+  await createUser(fullName, email, hashedPassword);
+
+  return res.status(201).json({
+    message: "New user successfully created",
+  });
 }

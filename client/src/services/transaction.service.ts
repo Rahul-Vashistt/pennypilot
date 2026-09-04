@@ -13,3 +13,7 @@ export const createTransaction = async (data: CreateTransaction) => {
 
   return res.data;
 }
+
+export const deleteTransaction = async (id: string) => {
+  await api.delete(`/transactions/${id}`);
+};

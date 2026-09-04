@@ -7,7 +7,8 @@ import {
   Trash2,
   WalletCards,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import Toolbar from "./Toolbar";
 
@@ -29,6 +30,11 @@ type TransactionFilter = "All" | "Income" | "Expense";
 
 type DateFilter = "This Month" | "Last Month" | "All Time";
 
+interface MenuPosition {
+  top: number;
+  left: number;
+}
+
 export default function TransactionList({
   transactions = [],
   onTransactionsCountChange,
@@ -43,6 +49,10 @@ export default function TransactionList({
   const [dateFilter, setDateFilter] = useState<DateFilter>("This Month");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
+
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   const transactionCount = transactions?.length ?? 0;
 
@@ -143,8 +153,67 @@ export default function TransactionList({
       !transactions?.some((transaction) => transaction?._id === openMenuId)
     ) {
       setOpenMenuId(null);
+      setMenuPosition(null);
     }
   }, [transactions, openMenuId]);
+
+
+  useEffect(() => {
+    if (!openMenuId || !menuButtonRef.current) {
+      return;
+    }
+
+    const updateMenuPosition = () => {
+      const button = menuButtonRef.current;
+
+      if (!button) return;
+
+      const rect = button.getBoundingClientRect();
+
+      const menuWidth = 144;
+      const menuHeight = 90;
+      const gap = 6;
+      const viewportPadding = 8;
+
+      let left = rect.right - menuWidth;
+
+      if (left < viewportPadding) {
+        left = viewportPadding;
+      }
+
+      if (left + menuWidth > window.innerWidth - viewportPadding) {
+        left = window.innerWidth - menuWidth - viewportPadding;
+      }
+
+      let top = rect.bottom + gap;
+
+      if (top + menuHeight > window.innerHeight - viewportPadding) {
+        top = rect.top - menuHeight - gap;
+      }
+
+      if (top < viewportPadding) {
+        top = viewportPadding;
+      }
+
+      setMenuPosition({
+        top,
+        left,
+      });
+    };
+
+    updateMenuPosition();
+
+    window.addEventListener("resize", updateMenuPosition);
+
+    window.addEventListener("scroll", updateMenuPosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updateMenuPosition);
+
+      window.removeEventListener("scroll", updateMenuPosition, true);
+    };
+  }, [openMenuId]);
+
 
   const selectedCount = selectedIds.size;
 
@@ -227,7 +296,59 @@ export default function TransactionList({
     });
 
     setOpenMenuId(null);
+    setMenuPosition(null);
   };
+
+  const handleOpenMenu = (
+    transactionId?: string,
+    button?: HTMLButtonElement | null,
+  ) => {
+    if (!transactionId || !button) return;
+
+    if (openMenuId === transactionId) {
+      setOpenMenuId(null);
+      setMenuPosition(null);
+      menuButtonRef.current = null;
+      return;
+    }
+
+    menuButtonRef.current = button;
+    setOpenMenuId(transactionId);
+  };
+
+  const handleCloseMenu = () => {
+    setOpenMenuId(null);
+    setMenuPosition(null);
+    menuButtonRef.current = null;
+  };
+
+  useEffect(() => {
+    if (!openMenuId) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      const clickedButton =
+        menuButtonRef.current?.contains(target);
+
+      const clickedMenu =
+        menuRef.current?.contains(target);
+
+      if (!clickedButton && !clickedMenu) {
+        handleCloseMenu();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside,
+      );
+    };
+  }, [openMenuId]);
+
 
   const formatAmount = (transaction: Transaction) => {
     const amount = Number(transaction?.amount ?? 0);
@@ -287,6 +408,10 @@ export default function TransactionList({
     category !== "All" ||
     dateFilter !== "All Time";
 
+  const activeMenuTransaction = openMenuId
+    ? transactions.find((transaction) => transaction?._id === openMenuId)
+    : null;
+
   return (
     <section className="w-full">
       <Toolbar
@@ -323,9 +448,10 @@ export default function TransactionList({
         )}
       </div>
 
+      {/* Desktop */}
       <div className="mt-4 hidden overflow-hidden rounded-3xl border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 md:block">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] border-collapse">
+          <table className="w-full min-w-245 border-collapse">
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50/70 dark:border-zinc-800 dark:bg-zinc-950/50">
                 <th className="w-12 px-5 py-4">
@@ -371,7 +497,7 @@ export default function TransactionList({
                   Date
                 </th>
 
-                <th className="w-14 px-4 py-4" />
+                <th className="w-16 px-4 py-4" />
               </tr>
             </thead>
 
@@ -379,20 +505,18 @@ export default function TransactionList({
               {filteredTransactions.map((transaction) => {
                 const selected = selectedIds.has(transaction?._id);
 
-                const menuOpen = openMenuId === transaction?._id;
-
                 return (
                   <tr
                     key={transaction?._id}
                     className={`
-                        border-b border-zinc-100 last:border-b-0
-                        transition-colors dark:border-zinc-800
-                        ${
-                          selected
-                            ? "bg-emerald-50/60 dark:bg-emerald-950/20"
-                            : "hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40"
-                        }
-                      `}
+                      border-b border-zinc-100 last:border-b-0
+                      transition-colors dark:border-zinc-800
+                      ${
+                        selected
+                          ? "bg-emerald-50/60 dark:bg-emerald-950/20"
+                          : "hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40"
+                      }
+                    `}
                   >
                     <td className="px-5 py-4">
                       <button
@@ -402,14 +526,14 @@ export default function TransactionList({
                           transaction?.description ?? "transaction"
                         }`}
                         className={`
-                            flex h-5 w-5 items-center justify-center
-                            rounded-md border transition-colors
-                            ${
-                              selected
-                                ? "border-emerald-600 bg-emerald-600 text-white"
-                                : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
-                            }
-                          `}
+                          flex h-5 w-5 items-center justify-center
+                          rounded-md border transition-colors
+                          ${
+                            selected
+                              ? "border-emerald-600 bg-emerald-600 text-white"
+                              : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+                          }
+                        `}
                       >
                         {selected && <Check size={13} strokeWidth={3} />}
                       </button>
@@ -442,14 +566,14 @@ export default function TransactionList({
                     <td className="px-4 py-4">
                       <span
                         className={`
-                            inline-flex rounded-full px-3 py-1
-                            text-xs font-semibold
-                            ${
-                              transaction?.transactionType === "Income"
-                                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
-                                : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
-                            }
-                          `}
+                          inline-flex rounded-full px-3 py-1
+                          text-xs font-semibold
+                          ${
+                            transaction?.transactionType === "Income"
+                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                              : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                          }
+                        `}
                       >
                         {transaction?.transactionType ?? "—"}
                       </span>
@@ -457,13 +581,13 @@ export default function TransactionList({
 
                     <td
                       className={`
-                          px-4 py-4 text-right text-sm font-bold
-                          ${
-                            transaction?.transactionType === "Income"
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-red-600 dark:text-red-400"
-                          }
-                        `}
+                        px-4 py-4 text-right text-sm font-bold
+                        ${
+                          transaction?.transactionType === "Income"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-red-600 dark:text-red-400"
+                        }
+                      `}
                     >
                       {formatAmount(transaction)}
                     </td>
@@ -472,72 +596,23 @@ export default function TransactionList({
                       {formatDate(transaction?.transactionDate)}
                     </td>
 
-                    <td className="relative px-4 py-4">
+                    <td className="w-16 min-w-16 px-4 py-4">
                       <button
                         type="button"
-                        onClick={() =>
-                          setOpenMenuId(
-                            menuOpen ? null : (transaction?._id ?? null),
-                          )
-                        }
                         aria-label="Transaction actions"
+                        onClick={(event) =>
+                          handleOpenMenu(transaction?._id, event.currentTarget)
+                        }
                         className="
-                            flex h-8 w-8 items-center justify-center
-                            rounded-lg text-zinc-500 transition-colors
-                            hover:bg-zinc-100 hover:text-zinc-900
-                            dark:text-zinc-400 dark:hover:bg-zinc-800
-                            dark:hover:text-zinc-100
-                          "
+                          flex h-8 w-8 items-center justify-center
+                          rounded-lg text-zinc-500
+                          hover:bg-zinc-100
+                          dark:text-zinc-400
+                          dark:hover:bg-zinc-800
+                        "
                       >
                         <MoreHorizontal size={18} />
                       </button>
-
-                      {menuOpen && (
-                        <div
-                          className="
-                              absolute right-4 top-12 z-30 w-36
-                              overflow-hidden rounded-xl border
-                              border-zinc-200 bg-white p-1
-                              shadow-xl dark:border-zinc-700
-                              dark:bg-zinc-900
-                            "
-                        >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onEdit?.(transaction);
-                              setOpenMenuId(null);
-                            }}
-                            className="
-                                flex w-full items-center gap-2
-                                rounded-lg px-3 py-2 text-left
-                                text-xs font-medium text-zinc-700
-                                hover:bg-zinc-100
-                                dark:text-zinc-200
-                                dark:hover:bg-zinc-800
-                              "
-                          >
-                            <Pencil size={15} />
-                            Edit
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(transaction)}
-                            className="
-                                flex w-full items-center gap-2
-                                rounded-lg px-3 py-2 text-left
-                                text-xs font-medium text-red-600
-                                hover:bg-red-50
-                                dark:text-red-400
-                                dark:hover:bg-red-950/30
-                              "
-                          >
-                            <Trash2 size={15} />
-                            Delete
-                          </button>
-                        </div>
-                      )}
                     </td>
                   </tr>
                 );
@@ -551,6 +626,7 @@ export default function TransactionList({
         )}
       </div>
 
+      {/* Mobile */}
       <div className="mt-4 space-y-3 px-4 md:hidden">
         {filteredTransactions.length > 0 && (
           <button
@@ -586,21 +662,19 @@ export default function TransactionList({
         {filteredTransactions.map((transaction) => {
           const selected = selectedIds.has(transaction?._id);
 
-          const menuOpen = openMenuId === transaction?._id;
-
           return (
             <div
               key={transaction?._id}
               className={`
-                  relative rounded-2xl border bg-white p-4
-                  shadow-sm transition-colors
-                  dark:border-zinc-800 dark:bg-zinc-900
-                  ${
-                    selected
-                      ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-800 dark:bg-emerald-950/20"
-                      : "border-zinc-200"
-                  }
-                `}
+                relative rounded-2xl border bg-white p-4
+                shadow-sm transition-colors
+                dark:border-zinc-800 dark:bg-zinc-900
+                ${
+                  selected
+                    ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-800 dark:bg-emerald-950/20"
+                    : "border-zinc-200"
+                }
+              `}
             >
               <div className="flex items-start gap-3">
                 <button
@@ -610,14 +684,14 @@ export default function TransactionList({
                     transaction?.description ?? "transaction"
                   }`}
                   className={`
-                      mt-1 flex h-5 w-5 shrink-0 items-center
-                      justify-center rounded-md border
-                      ${
-                        selected
-                          ? "border-emerald-600 bg-emerald-600 text-white"
-                          : "border-zinc-300 dark:border-zinc-700"
-                      }
-                    `}
+                    mt-1 flex h-5 w-5 shrink-0 items-center
+                    justify-center rounded-md border
+                    ${
+                      selected
+                        ? "border-emerald-600 bg-emerald-600 text-white"
+                        : "border-zinc-300 dark:border-zinc-700"
+                    }
+                  `}
                 >
                   {selected && <Check size={13} strokeWidth={3} />}
                 </button>
@@ -636,13 +710,13 @@ export default function TransactionList({
 
                     <p
                       className={`
-                          shrink-0 text-sm font-bold
-                          ${
-                            transaction?.transactionType === "Income"
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-red-600 dark:text-red-400"
-                          }
-                        `}
+                        shrink-0 text-sm font-bold
+                        ${
+                          transaction?.transactionType === "Income"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-red-600 dark:text-red-400"
+                        }
+                      `}
                     >
                       {formatAmount(transaction)}
                     </p>
@@ -651,14 +725,14 @@ export default function TransactionList({
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <span
                       className={`
-                          rounded-full px-2.5 py-1 text-[10px]
-                          font-semibold
-                          ${
-                            transaction?.transactionType === "Income"
-                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
-                              : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
-                          }
-                        `}
+                        rounded-full px-2.5 py-1 text-[10px]
+                        font-semibold
+                        ${
+                          transaction?.transactionType === "Income"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                            : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                        }
+                      `}
                     >
                       {transaction?.transactionType ?? "—"}
                     </span>
@@ -674,73 +748,22 @@ export default function TransactionList({
                   </div>
                 </div>
 
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setOpenMenuId(
-                        menuOpen ? null : (transaction?._id ?? null),
-                      )
-                    }
-                    aria-label="Transaction actions"
-                    className="
-                        flex h-8 w-8 items-center justify-center
-                        rounded-lg text-zinc-500
-                        hover:bg-zinc-100
-                        dark:text-zinc-400
-                        dark:hover:bg-zinc-800
-                      "
-                  >
-                    <MoreHorizontal size={18} />
-                  </button>
-
-                  {menuOpen && (
-                    <div
-                      className="
-                          absolute right-0 top-9 z-30 w-32
-                          overflow-hidden rounded-xl border
-                          border-zinc-200 bg-white p-1
-                          shadow-xl dark:border-zinc-700
-                          dark:bg-zinc-900
-                        "
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onEdit?.(transaction);
-                          setOpenMenuId(null);
-                        }}
-                        className="
-                            flex w-full items-center gap-2
-                            rounded-lg px-3 py-2 text-left
-                            text-xs font-medium text-zinc-700
-                            hover:bg-zinc-100
-                            dark:text-zinc-200
-                            dark:hover:bg-zinc-800
-                          "
-                      >
-                        <Pencil size={14} />
-                        Edit
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(transaction)}
-                        className="
-                            flex w-full items-center gap-2
-                            rounded-lg px-3 py-2 text-left
-                            text-xs font-medium text-red-600
-                            hover:bg-red-50
-                            dark:text-red-400
-                            dark:hover:bg-red-950/30
-                          "
-                      >
-                        <Trash2 size={14} />
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    handleOpenMenu(transaction?._id, event.currentTarget)
+                  }
+                  aria-label="Transaction actions"
+                  className="
+                    flex h-8 w-8 shrink-0 items-center justify-center
+                    rounded-lg text-zinc-500
+                    hover:bg-zinc-100
+                    dark:text-zinc-400
+                    dark:hover:bg-zinc-800
+                  "
+                >
+                  <MoreHorizontal size={18} />
+                </button>
               </div>
             </div>
           );
@@ -750,6 +773,57 @@ export default function TransactionList({
           <EmptyState hasFilters={hasFilters} />
         )}
       </div>
+
+      {/* Action menu */}
+      {openMenuId &&
+        menuPosition &&
+        activeMenuTransaction &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className="
+              fixed z-[9999] w-36 overflow-hidden rounded-xl
+              border border-zinc-200 bg-white p-1 shadow-xl
+              dark:border-zinc-700 dark:bg-zinc-900
+            "
+            style={{
+              top: menuPosition.top,
+              left: menuPosition.left,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                onEdit?.(activeMenuTransaction);
+                handleCloseMenu();
+              }}
+              className="
+                flex w-full items-center gap-2 rounded-lg
+                px-3 py-2 text-left text-xs font-medium
+                text-zinc-700 hover:bg-zinc-100
+                dark:text-zinc-200 dark:hover:bg-zinc-800
+              "
+            >
+              <Pencil size={14} />
+              Edit
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleDelete(activeMenuTransaction)}
+              className="
+                flex w-full items-center gap-2 rounded-lg
+                px-3 py-2 text-left text-xs font-medium
+                text-red-600 hover:bg-red-50
+                dark:text-red-400 dark:hover:bg-red-950/30
+              "
+            >
+              <Trash2 size={14} />
+              Delete
+            </button>
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }
