@@ -2,6 +2,7 @@ import express from "express";
 import {
   handleAddTransaction,
   handleDeleteOneTransaction,
+  handleDeleteTransactions,
   handleGetAllTransactions,
 } from "../controllers/transaction.controller.js";
 
@@ -11,6 +12,7 @@ transactionRouter
   .route("/")
   .post(handleAddTransaction)
   .get(handleGetAllTransactions)
+  .delete(handleDeleteTransactions)
 
 transactionRouter
   .route("/:transactionId")

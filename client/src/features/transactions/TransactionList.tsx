@@ -1,11 +1,14 @@
 import {
+  AlertTriangle,
   Banknote,
   Check,
   CreditCard,
+  Loader2,
   MoreHorizontal,
   Pencil,
   Trash2,
   WalletCards,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -24,6 +27,8 @@ interface TransactionListProps {
   onEdit?: (transaction: Transaction) => void;
   onDelete?: (transactionId: string) => void;
   onDeleteMany?: (transactionIds: string[]) => void;
+  isDeleting?: boolean;
+  isDeletingMany?: boolean;
 }
 
 type TransactionFilter = "All" | "Income" | "Expense";
@@ -35,12 +40,21 @@ interface MenuPosition {
   left: number;
 }
 
+interface DeleteConfirmation {
+  type: "single" | "multiple";
+  transactionId?: string;
+  transactionIds?: string[];
+  description?: string;
+}
+
 export default function TransactionList({
   transactions = [],
   onTransactionsCountChange,
   onEdit,
   onDelete,
   onDeleteMany,
+  isDeleting = false,
+  isDeletingMany = false,
 }: TransactionListProps) {
   const [search, setSearch] = useState("");
   const [transactionType, setTransactionType] =
@@ -50,11 +64,13 @@ export default function TransactionList({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] =
+    useState<DeleteConfirmation | null>(null);
 
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const transactionCount = transactions?.length ?? 0;
+  const transactionCount = transactions.length;
 
   const allCategories = useMemo(() => {
     return Array.from(
@@ -65,69 +81,61 @@ export default function TransactionList({
   const filteredTransactions = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
-    return (
-      transactions?.filter((transaction) => {
-        if (!transaction) return false;
+    return transactions.filter((transaction) => {
+      if (!transaction) return false;
 
-        const description = transaction.description?.toLowerCase() ?? "";
+      const description = transaction.description?.toLowerCase() ?? "";
+      const transactionCategory = transaction.category?.toLowerCase() ?? "";
+      const paymentMethod = transaction.paymentMethod?.toLowerCase() ?? "";
 
-        const transactionCategory = transaction.category?.toLowerCase() ?? "";
+      const matchesSearch =
+        !normalizedSearch ||
+        description.includes(normalizedSearch) ||
+        transactionCategory.includes(normalizedSearch) ||
+        paymentMethod.includes(normalizedSearch);
 
-        const paymentMethod = transaction.paymentMethod?.toLowerCase() ?? "";
+      const matchesType =
+        transactionType === "All" ||
+        transaction.transactionType === transactionType;
 
-        const matchesSearch =
-          !normalizedSearch ||
-          description.includes(normalizedSearch) ||
-          transactionCategory.includes(normalizedSearch) ||
-          paymentMethod.includes(normalizedSearch);
+      const matchesCategory =
+        category === "All" || transaction.category === category;
 
-        const matchesType =
-          transactionType === "All" ||
-          transaction.transactionType === transactionType;
+      const transactionDate = transaction.transactionDate
+        ? new Date(transaction.transactionDate)
+        : null;
 
-        const matchesCategory =
-          category === "All" || transaction.category === category;
+      const validDate =
+        transactionDate && !Number.isNaN(transactionDate.getTime());
 
-        const transactionDate = transaction.transactionDate
-          ? new Date(transaction.transactionDate)
-          : null;
+      const now = new Date();
 
-        const validDate =
-          transactionDate && !Number.isNaN(transactionDate.getTime());
+      let matchesDate = true;
 
-        const now = new Date();
-
-        let matchesDate = true;
-
-        if (dateFilter === "This Month") {
-          if (!validDate) {
-            matchesDate = false;
-          } else {
-            matchesDate =
-              transactionDate.getMonth() === now.getMonth() &&
-              transactionDate.getFullYear() === now.getFullYear();
-          }
+      if (dateFilter === "This Month") {
+        if (!validDate) {
+          matchesDate = false;
+        } else {
+          matchesDate =
+            transactionDate.getMonth() === now.getMonth() &&
+            transactionDate.getFullYear() === now.getFullYear();
         }
+      }
 
-        if (dateFilter === "Last Month") {
-          if (!validDate) {
-            matchesDate = false;
-          } else {
-            const lastMonth = new Date(
-              now.getFullYear(),
-              now.getMonth() - 1,
-              1,
-            );
+      if (dateFilter === "Last Month") {
+        if (!validDate) {
+          matchesDate = false;
+        } else {
+          const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-            matchesDate =
-              transactionDate.getMonth() === lastMonth.getMonth() &&
-              transactionDate.getFullYear() === lastMonth.getFullYear();
-          }
+          matchesDate =
+            transactionDate.getMonth() === lastMonth.getMonth() &&
+            transactionDate.getFullYear() === lastMonth.getFullYear();
         }
+      }
 
-        return matchesSearch && matchesType && matchesCategory && matchesDate;
-      }) ?? []
-    );
+      return matchesSearch && matchesType && matchesCategory && matchesDate;
+    });
   }, [transactions, search, transactionType, category, dateFilter]);
 
   useEffect(() => {
@@ -136,8 +144,7 @@ export default function TransactionList({
 
   useEffect(() => {
     const transactionIds = new Set(
-      transactions?.map((transaction) => transaction?._id).filter(Boolean) ??
-        [],
+      transactions.map((transaction) => transaction?._id).filter(Boolean),
     );
 
     setSelectedIds((current) => {
@@ -150,13 +157,12 @@ export default function TransactionList({
   useEffect(() => {
     if (
       openMenuId &&
-      !transactions?.some((transaction) => transaction?._id === openMenuId)
+      !transactions.some((transaction) => transaction?._id === openMenuId)
     ) {
       setOpenMenuId(null);
       setMenuPosition(null);
     }
   }, [transactions, openMenuId]);
-
 
   useEffect(() => {
     if (!openMenuId || !menuButtonRef.current) {
@@ -204,16 +210,13 @@ export default function TransactionList({
     updateMenuPosition();
 
     window.addEventListener("resize", updateMenuPosition);
-
     window.addEventListener("scroll", updateMenuPosition, true);
 
     return () => {
       window.removeEventListener("resize", updateMenuPosition);
-
       window.removeEventListener("scroll", updateMenuPosition, true);
     };
   }, [openMenuId]);
-
 
   const selectedCount = selectedIds.size;
 
@@ -262,41 +265,55 @@ export default function TransactionList({
   };
 
   const handleDeleteSelected = () => {
-    if (selectedIds.size === 0) return;
+    if (selectedIds.size === 0 || isDeletingMany) return;
 
     const ids = Array.from(selectedIds);
 
-    const confirmed = window.confirm(
-      `Delete ${ids.length} selected transaction${
-        ids.length === 1 ? "" : "s"
-      }?`,
-    );
-
-    if (!confirmed) return;
-
-    onDeleteMany?.(ids);
-    setSelectedIds(new Set());
+    setDeleteConfirmation({
+      type: "multiple",
+      transactionIds: ids,
+    });
   };
 
   const handleDelete = (transaction: Transaction) => {
-    if (!transaction?._id) return;
+    if (!transaction?._id || isDeleting) return;
 
-    const confirmed = window.confirm(
-      `Delete "${transaction.description ?? "this transaction"}"?`,
-    );
-
-    if (!confirmed) return;
-
-    onDelete?.(transaction._id);
-
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      next.delete(transaction._id);
-      return next;
+    setDeleteConfirmation({
+      type: "single",
+      transactionId: transaction._id,
+      description: transaction.description ?? "this transaction",
     });
 
-    setOpenMenuId(null);
-    setMenuPosition(null);
+    handleCloseMenu();
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteConfirmation) return;
+
+    if (
+      deleteConfirmation.type === "single" &&
+      deleteConfirmation.transactionId
+    ) {
+      onDelete?.(deleteConfirmation.transactionId);
+
+      setSelectedIds((current) => {
+        const next = new Set(current);
+        next.delete(deleteConfirmation.transactionId as string);
+        return next;
+      });
+
+      setDeleteConfirmation(null);
+      return;
+    }
+
+    if (
+      deleteConfirmation.type === "multiple" &&
+      deleteConfirmation.transactionIds?.length
+    ) {
+      onDeleteMany?.(deleteConfirmation.transactionIds);
+      setSelectedIds(new Set());
+      setDeleteConfirmation(null);
+    }
   };
 
   const handleOpenMenu = (
@@ -322,17 +339,21 @@ export default function TransactionList({
     menuButtonRef.current = null;
   };
 
+  const handleCloseDeleteConfirmation = () => {
+    if (isDeleting || isDeletingMany) return;
+
+    setDeleteConfirmation(null);
+  };
+
   useEffect(() => {
     if (!openMenuId) return;
 
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
 
-      const clickedButton =
-        menuButtonRef.current?.contains(target);
+      const clickedButton = menuButtonRef.current?.contains(target);
 
-      const clickedMenu =
-        menuRef.current?.contains(target);
+      const clickedMenu = menuRef.current?.contains(target);
 
       if (!clickedButton && !clickedMenu) {
         handleCloseMenu();
@@ -342,13 +363,25 @@ export default function TransactionList({
     document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside,
-      );
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [openMenuId]);
 
+  useEffect(() => {
+    if (!deleteConfirmation) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        handleCloseDeleteConfirmation();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [deleteConfirmation, isDeleting, isDeletingMany]);
 
   const formatAmount = (transaction: Transaction) => {
     const amount = Number(transaction?.amount ?? 0);
@@ -412,6 +445,19 @@ export default function TransactionList({
     ? transactions.find((transaction) => transaction?._id === openMenuId)
     : null;
 
+  const isDeletePending =
+    deleteConfirmation?.type === "single" ? isDeleting : isDeletingMany;
+
+  const deleteTitle =
+    deleteConfirmation?.type === "multiple"
+      ? `Delete ${deleteConfirmation.transactionIds?.length ?? 0} transactions?`
+      : "Delete transaction?";
+
+  const deleteDescription =
+    deleteConfirmation?.type === "multiple"
+      ? "This action will permanently remove the selected transactions. This cannot be undone."
+      : `Are you sure you want to delete "${deleteConfirmation?.description}"? This action cannot be undone.`;
+
   return (
     <section className="w-full">
       <Toolbar
@@ -448,10 +494,9 @@ export default function TransactionList({
         )}
       </div>
 
-      {/* Desktop */}
       <div className="mt-4 hidden overflow-hidden rounded-3xl border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 md:block">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-245 border-collapse">
+          <table className="w-full min-w-[980px] border-collapse">
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50/70 dark:border-zinc-800 dark:bg-zinc-950/50">
                 <th className="w-12 px-5 py-4">
@@ -459,15 +504,11 @@ export default function TransactionList({
                     type="button"
                     onClick={toggleSelectAll}
                     aria-label="Select all transactions"
-                    className={`
-                      flex h-5 w-5 items-center justify-center
-                      rounded-md border transition-colors
-                      ${
-                        allVisibleSelected
-                          ? "border-emerald-600 bg-emerald-600 text-white"
-                          : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
-                      }
-                    `}
+                    className={`flex h-5 w-5 items-center justify-center rounded-md border transition-colors ${
+                      allVisibleSelected
+                        ? "border-emerald-600 bg-emerald-600 text-white"
+                        : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+                    }`}
                   >
                     {allVisibleSelected && <Check size={13} strokeWidth={3} />}
                   </button>
@@ -508,15 +549,11 @@ export default function TransactionList({
                 return (
                   <tr
                     key={transaction?._id}
-                    className={`
-                      border-b border-zinc-100 last:border-b-0
-                      transition-colors dark:border-zinc-800
-                      ${
-                        selected
-                          ? "bg-emerald-50/60 dark:bg-emerald-950/20"
-                          : "hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40"
-                      }
-                    `}
+                    className={`border-b border-zinc-100 last:border-b-0 transition-colors dark:border-zinc-800 ${
+                      selected
+                        ? "bg-emerald-50/60 dark:bg-emerald-950/20"
+                        : "hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40"
+                    }`}
                   >
                     <td className="px-5 py-4">
                       <button
@@ -525,15 +562,11 @@ export default function TransactionList({
                         aria-label={`Select ${
                           transaction?.description ?? "transaction"
                         }`}
-                        className={`
-                          flex h-5 w-5 items-center justify-center
-                          rounded-md border transition-colors
-                          ${
-                            selected
-                              ? "border-emerald-600 bg-emerald-600 text-white"
-                              : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
-                          }
-                        `}
+                        className={`flex h-5 w-5 items-center justify-center rounded-md border transition-colors ${
+                          selected
+                            ? "border-emerald-600 bg-emerald-600 text-white"
+                            : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+                        }`}
                       >
                         {selected && <Check size={13} strokeWidth={3} />}
                       </button>
@@ -565,29 +598,22 @@ export default function TransactionList({
 
                     <td className="px-4 py-4">
                       <span
-                        className={`
-                          inline-flex rounded-full px-3 py-1
-                          text-xs font-semibold
-                          ${
-                            transaction?.transactionType === "Income"
-                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
-                              : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
-                          }
-                        `}
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                          transaction?.transactionType === "Income"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                            : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                        }`}
                       >
                         {transaction?.transactionType ?? "—"}
                       </span>
                     </td>
 
                     <td
-                      className={`
-                        px-4 py-4 text-right text-sm font-bold
-                        ${
-                          transaction?.transactionType === "Income"
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-red-600 dark:text-red-400"
-                        }
-                      `}
+                      className={`px-4 py-4 text-right text-sm font-bold ${
+                        transaction?.transactionType === "Income"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}
                     >
                       {formatAmount(transaction)}
                     </td>
@@ -603,13 +629,7 @@ export default function TransactionList({
                         onClick={(event) =>
                           handleOpenMenu(transaction?._id, event.currentTarget)
                         }
-                        className="
-                          flex h-8 w-8 items-center justify-center
-                          rounded-lg text-zinc-500
-                          hover:bg-zinc-100
-                          dark:text-zinc-400
-                          dark:hover:bg-zinc-800
-                        "
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                       >
                         <MoreHorizontal size={18} />
                       </button>
@@ -626,29 +646,19 @@ export default function TransactionList({
         )}
       </div>
 
-      {/* Mobile */}
       <div className="mt-4 space-y-3 px-4 md:hidden">
         {filteredTransactions.length > 0 && (
           <button
             type="button"
             onClick={toggleSelectAll}
-            className="
-              flex w-full items-center gap-3 rounded-2xl
-              border border-zinc-200 bg-white px-4 py-3
-              text-left shadow-sm dark:border-zinc-800
-              dark:bg-zinc-900
-            "
+            className="flex w-full items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-left shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
           >
             <span
-              className={`
-                flex h-5 w-5 shrink-0 items-center justify-center
-                rounded-md border
-                ${
-                  allVisibleSelected
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-zinc-300 dark:border-zinc-700"
-                }
-              `}
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                allVisibleSelected
+                  ? "border-emerald-600 bg-emerald-600 text-white"
+                  : "border-zinc-300 dark:border-zinc-700"
+              }`}
             >
               {allVisibleSelected && <Check size={13} strokeWidth={3} />}
             </span>
@@ -665,16 +675,11 @@ export default function TransactionList({
           return (
             <div
               key={transaction?._id}
-              className={`
-                relative rounded-2xl border bg-white p-4
-                shadow-sm transition-colors
-                dark:border-zinc-800 dark:bg-zinc-900
-                ${
-                  selected
-                    ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-800 dark:bg-emerald-950/20"
-                    : "border-zinc-200"
-                }
-              `}
+              className={`relative rounded-2xl border bg-white p-4 shadow-sm transition-colors dark:border-zinc-800 dark:bg-zinc-900 ${
+                selected
+                  ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-800 dark:bg-emerald-950/20"
+                  : "border-zinc-200"
+              }`}
             >
               <div className="flex items-start gap-3">
                 <button
@@ -683,15 +688,11 @@ export default function TransactionList({
                   aria-label={`Select ${
                     transaction?.description ?? "transaction"
                   }`}
-                  className={`
-                    mt-1 flex h-5 w-5 shrink-0 items-center
-                    justify-center rounded-md border
-                    ${
-                      selected
-                        ? "border-emerald-600 bg-emerald-600 text-white"
-                        : "border-zinc-300 dark:border-zinc-700"
-                    }
-                  `}
+                  className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                    selected
+                      ? "border-emerald-600 bg-emerald-600 text-white"
+                      : "border-zinc-300 dark:border-zinc-700"
+                  }`}
                 >
                   {selected && <Check size={13} strokeWidth={3} />}
                 </button>
@@ -709,14 +710,11 @@ export default function TransactionList({
                     </div>
 
                     <p
-                      className={`
-                        shrink-0 text-sm font-bold
-                        ${
-                          transaction?.transactionType === "Income"
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-red-600 dark:text-red-400"
-                        }
-                      `}
+                      className={`shrink-0 text-sm font-bold ${
+                        transaction?.transactionType === "Income"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}
                     >
                       {formatAmount(transaction)}
                     </p>
@@ -724,15 +722,11 @@ export default function TransactionList({
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <span
-                      className={`
-                        rounded-full px-2.5 py-1 text-[10px]
-                        font-semibold
-                        ${
-                          transaction?.transactionType === "Income"
-                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
-                            : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
-                        }
-                      `}
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                        transaction?.transactionType === "Income"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                          : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                      }`}
                     >
                       {transaction?.transactionType ?? "—"}
                     </span>
@@ -754,13 +748,7 @@ export default function TransactionList({
                     handleOpenMenu(transaction?._id, event.currentTarget)
                   }
                   aria-label="Transaction actions"
-                  className="
-                    flex h-8 w-8 shrink-0 items-center justify-center
-                    rounded-lg text-zinc-500
-                    hover:bg-zinc-100
-                    dark:text-zinc-400
-                    dark:hover:bg-zinc-800
-                  "
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                 >
                   <MoreHorizontal size={18} />
                 </button>
@@ -774,18 +762,13 @@ export default function TransactionList({
         )}
       </div>
 
-      {/* Action menu */}
       {openMenuId &&
         menuPosition &&
         activeMenuTransaction &&
         createPortal(
           <div
             ref={menuRef}
-            className="
-              fixed z-[9999] w-36 overflow-hidden rounded-xl
-              border border-zinc-200 bg-white p-1 shadow-xl
-              dark:border-zinc-700 dark:bg-zinc-900
-            "
+            className="fixed z-[9999] w-36 overflow-hidden rounded-xl border border-zinc-200 bg-white p-1 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
             style={{
               top: menuPosition.top,
               left: menuPosition.left,
@@ -797,12 +780,7 @@ export default function TransactionList({
                 onEdit?.(activeMenuTransaction);
                 handleCloseMenu();
               }}
-              className="
-                flex w-full items-center gap-2 rounded-lg
-                px-3 py-2 text-left text-xs font-medium
-                text-zinc-700 hover:bg-zinc-100
-                dark:text-zinc-200 dark:hover:bg-zinc-800
-              "
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
               <Pencil size={14} />
               Edit
@@ -811,16 +789,85 @@ export default function TransactionList({
             <button
               type="button"
               onClick={() => handleDelete(activeMenuTransaction)}
-              className="
-                flex w-full items-center gap-2 rounded-lg
-                px-3 py-2 text-left text-xs font-medium
-                text-red-600 hover:bg-red-50
-                dark:text-red-400 dark:hover:bg-red-950/30
-              "
+              disabled={isDeleting}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-950/30"
             >
               <Trash2 size={14} />
               Delete
             </button>
+          </div>,
+          document.body,
+        )}
+
+      {deleteConfirmation &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4 py-6 backdrop-blur-[2px]"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                handleCloseDeleteConfirmation();
+              }
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-dialog-title"
+              className="w-full max-w-md overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900"
+            >
+              <div className="flex items-start gap-4 p-5 sm:p-6">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400">
+                  <AlertTriangle size={22} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <h3
+                    id="delete-dialog-title"
+                    className="text-base font-semibold text-zinc-900 dark:text-white"
+                  >
+                    {deleteTitle}
+                  </h3>
+
+                  <p className="mt-1.5 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                    {deleteDescription}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCloseDeleteConfirmation}
+                  disabled={isDeletePending}
+                  aria-label="Close delete confirmation"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="flex flex-col-reverse gap-2 border-t border-zinc-100 bg-zinc-50/70 p-4 sm:flex-row sm:justify-end dark:border-zinc-800 dark:bg-zinc-950/40">
+                <button
+                  type="button"
+                  onClick={handleCloseDeleteConfirmation}
+                  disabled={isDeletePending}
+                  className="h-10 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  disabled={isDeletePending}
+                  className="flex h-10 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-red-500 dark:hover:bg-red-600"
+                >
+                  {isDeletePending && (
+                    <Loader2 size={16} className="animate-spin" />
+                  )}
+
+                  {isDeletePending ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
           </div>,
           document.body,
         )}

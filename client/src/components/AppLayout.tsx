@@ -4,12 +4,15 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { useState } from "react";
 import AddTransaction from "./AddTransaction";
+import { Toaster } from "sonner";
 
 export default function AppLayout() {
   const [isAddingTransaction, setIsAddingTransaction] = useState(false);
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
+      <Toaster position="top-right" richColors />
+
       <AddTransaction
         isOpen={isAddingTransaction}
         onClose={() => setIsAddingTransaction(false)}

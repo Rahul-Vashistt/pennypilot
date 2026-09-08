@@ -16,7 +16,7 @@ export async function addTransaction(
 }
 
 export async function getAllTransactions(): Promise<Transaction[]> {
-  return TransactionModel.find({});
+  return TransactionModel.find({}).sort({ createdAt: -1 });
 }
 
 export async function deleteTransactionById(id: string) {

@@ -59,7 +59,7 @@ export async function handleGetAllTransactions(req: Request, res: Response) {
   const transactions = await getAllTransactions();
 
   return res.status(200).json({
-    allTransactions: transactions.reverse(),
+    allTransactions: transactions,
   });
 }
 
